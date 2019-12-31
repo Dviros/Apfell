@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block body %}
+
+<h3>Transform Code Management</h3>
+
+<button class="btn btn{{config['outline-buttons']}}info" onclick="download_code_button()">Download Code</button>
+<button class="btn btn{{config['outline-buttons']}}success" onclick="upload_code_button()">Upload New Code</button>
+<button class="btn btn{{config['outline-buttons']}}primary" onclick="update_code_button()">Submit Current Code</button>
+<br><br>
+<div style="resize: vertical; overflow:auto;" id="transform_code">
+    <span>Theme: </span> <span style="display:inline-block"><select style="display:inline-block" v-model="theme"><option v-for="t in theme_options" :value="t">[[t]]</option></select></span>
+    <div class="card">
+        <div class="card-header bg-header border border-dark shadow text-white">Transform Callback and Payload Code</div>
+        <ace-editor v-model="code" min-lines="3" max-lines="500" :theme="theme" wrap="true"></ace-editor>
+    </div>
+
+</div>
+<br>
+<!-- THIS IS OUR MODAL FOR NEW MANUAL FILE MENU -->
+<div class="modal fade" id="FileModal" role="dialog">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+
+                <h3>Select File to Upload</h3>
+                <button type="button" class="close" data-dismiss="modal">×</button>
+            </div>
+              <div class="modal-body">
+                <table class="table table-striped table-hover {{config['table-color']}}">
+                    <tr>
+                        <td>
+                            Choose File to Upload:&nbsp;
+                        </td>
+                        <td>
+                            <input type="file" id="FileUpload">
+                        </td>
+                    </tr>
+                </table>
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn{{config['outline-buttons']}}warning" data-dismiss="modal" aria-hidden="true">Cancel</button>
+                <button class="btn btn{{config['outline-buttons']}}primary" data-dismiss="modal" id="FileSubmit">Submit</button>
+              </div>
+        </div>
+    </div>
+</div>
+<!-- END MODAL FOR NEW MANUAL FILE MENU -->
+{% endblock %}
+
+{% block scripts %}
+{% include "transform_management.js" %}
+{% endblock %}
+
+{% block body_config %}
+
+{% endblock %}

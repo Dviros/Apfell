@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block body %}
+<br>
+<div id="searches" class="input-group">
+    <input type="text" id="searchTextField" size="60" placeholder="Search with regex" height="7" @keyup.enter="search_comments()">
+    <button class="btn btn-md btn{{config['outline-buttons']}}primary" @click="search_comments()"><i class="fa fa-search"></i></button>
+</div>
+<button class="btn btn-md btn{{config['outline-buttons']}}info" onclick="view_by_operator()">View all by Operator</button>
+<button class="btn btn-md btn{{config['outline-buttons']}}info" onclick="view_by_callback()">View all by Callback</button>
+<br><br>
+<div id="outputByCallback">
+    <div v-for="c in callbacks" style="resize: vertical; overflow:scroll; margin-bottom:20px" class="card bg-card-body border border-dark shadow" :key="c.id">
+        <div class="card-header bg-header text-white border border-dark shadow" >
+            <h4 style="display:inline-block">Callback <a :href="'{{http}}://{{links.server_ip}}:{{links.server_port}}/split_callbacks/' + c.id" target="_blank" style="color:red"><b>[[c.id]]</b></a></h4> - [[c.user]]@[[c.host]]([[c.pid]])# - [[c.description]]
+        </div>
+            <div class="card-body bg-card-body border border-dark shadow" >
+                 <div class="card border border-dark shadow" v-for="task in c.tasks" style="word-wrap: break-word;margin:5px">
+                     <div :class="task.status + ' card-header border border-dark'">
+                         <template v-if="task.comment != ''">
+                            <button class="btn btn{{config['outline-buttons']}}danger btn-sm" @click="remove_comment(task.id)" style="margin:0px;padding:0px 4px;line-height:20px"><i class="fas fa-trash-alt"></i></button><span class="operator"> [[task.comment_operator]]</span>'s comment: [[task.comment]]<hr>
+                        </template>
+                         (<span class="operator">[[task.operator]]</span>'s task: <a :href="'{{http}}://{{links.server_ip}}:{{links.server_port}}/tasks/' + task.id" target="_blank"><b>[[task.id]]</b></a> <button class="btn btn btn-sm" @click="add_comment(task)" style="margin:0px;padding:0px 1px;line-height:18px"><img src="/add_comment.png" width="20px" height="20px" data-toggle="tooltip" title="Add a comment to this task for all operators to see and search by"></button> <label class="switch" style="width:40px; height:20px" data-toggle="tooltip" title="Toggle browser scripts if available and applied for this command's output"><input type="checkbox" :checked="task.use_scripted" v-model="task.use_scripted" @click="update_view()"><span class="script-slider round"></span></label>) <a class="btn btn-link" type="button" data-toggle="collapse" :data-target="'#cardbody' + task.id" aria-expanded="false" :aria-controls="'cardbody' + task.id" @click="toggle_arrow(task.id)"><img :id="'color-arrow' + task.id" src="/static/color-arrow.png" style="width:32px;height:32px;transform:rotate(0deg)" ><b>[[task.command]]</b>&nbsp;[[task.original_params]]</a><button class="btn btn-sm" style="color:{{config['text-color']}}" data-toggle="tooltip" title="Copy command to clipboard" @click="copyStringToClipboard(task.command + ' ' + task.original_params)" ><i class="far fa-copy" ></i></button>
+                     </div>
+                     <div class="collapse" :id="'cardbody' + task.id" style="width:100%">
+                          <div class="response-background card-body" >
+                              <template v-if="task.params != task.original_params">
+                                <button class="accordion" :id="'toggle_task' + task.id" @click="toggle_show_params(task.id)">Show transformed params</button><span class="response" style="display:none">[[task.params]]</span>
+                                </template>
+                            <template v-if="task.hasOwnProperty('scripted') && task.use_scripted">
+                                <span v-html="task.scripted"></span>
+                            </template>
+                            <template v-else>
+                                <span v-for="rsp in task.responses" :key="rsp.id" style="white-space: pre-wrap"><span class="timestamp">([[toLocalTime(rsp.timestamp)]])<br></span><span class="response"><pre>[[rsp.response]]</pre></span></span>
+                            </template>
+                          </div>
+                     </div>
+                 </div>
+            </div>
+    </div>
+</div>
+<div id="outputByOperator">
+    <div v-for="o in operators" style="resize: vertical; overflow:scroll" class="card bg-card-body border border-dark shadow" :key="o.id">
+        <div class="card-header bg-header text-white border border-dark" >
+            <h4><span class="operator">[[o.username]]</span>'s Comments</h4>
+        </div>
+            <div class="card-body bg-card-body border border-dark shadow" v-for="c in o.callbacks" style="word-wrap: break-word;margin:5px">
+                <div class="card-header bg-header border border-dark shadow text-white">Callback <a :href="'{{http}}://{{links.server_ip}}:{{links.server_port}}/split_callbacks/' + c.id" target="_blank" style="color:red"><b>[[c.id]]</b></a> - [[c.user]]@[[c.host]]([[c.pid]])# - [[c.description]]</div>
+                <div class="card border border-dark shadow" v-for="task in c.tasks" style="word-wrap: break-word;margin:5px">
+                    <div :class="task.status + ' card-header border border-dark shadow'">
+                        <template v-if="task.comment != ''">
+                            <button class="btn btn{{config['outline-buttons']}}danger btn-sm" @click="remove_comment(task.id)" style="margin:0px;padding:0px 4px;line-height:20px"><i class="fas fa-trash-alt"></i></button><span class="operator"> [[task.comment_operator]]</span>'s comment: [[task.comment]]<hr>
+                        </template>
+                        (<span class="operator">[[task.operator]]</span>'s task: <a :href="'{{http}}://{{links.server_ip}}:{{links.server_port}}/tasks/' + task.id" target="_blank"><b>[[task.id]]</b></a> <button class="btn btn btn-sm" @click="add_comment(task)" style="margin:0px;padding:0px 1px;line-height:18px;"><img src="/add_comment.png" width="20px" height="20px" data-toggle="tooltip" title="Add a comment to this task for all operators to see and search by"></button> <label class="switch" style="width:40px; height:20px" data-toggle="tooltip" title="Toggle browser scripts if available and applied for this command's output"><input type="checkbox" :checked="task.use_scripted" v-model="task.use_scripted" @click="update_view()"><span class="script-slider round"></span></label>)<a class="btn btn-link" type="button" data-toggle="collapse" :data-target="'#cardbody' + task.id" aria-expanded="false" :aria-controls="'cardbody' + task.id" @click="toggle_arrow(task.id)"></span><img :id="'color-arrow' + task.id" src="/static/color-arrow.png" style="width:32px;height:32px;transform:rotate(0deg)" ><b>[[task.command]]</b>&nbsp;[[task.original_params]]</a><button class="btn btn-sm" style="color:{{config['text-color']}}" data-toggle="tooltip" title="Copy command to clipboard" @click="copyStringToClipboard(task.command + ' ' + task.original_params)" ><i class="far fa-copy" ></i></button>
+                    </div>
+                    <div class="collapse" :id="'cardbody' + task.id" style="width:100%">
+                          <div class="response-background card-body" >
+                            <template v-if="task.params != task.original_params">
+                                <button class="accordion" :id="'toggle_task' + task.id" @click="toggle_show_params(task.id)">Show transformed params</button><span class="response" style="display:none">[[task.params]]</span><br>
+                            </template>
+                            <template v-if="task.hasOwnProperty('scripted') && task.use_scripted">
+                                <span v-html="task.scripted"></span>
+                            </template>
+                            <template v-else>
+                                <span v-for="rsp in task.responses" :key="rsp.id" style="white-space: pre-wrap"><span class="timestamp">([[toLocalTime(rsp.timestamp)]])<br></span><span class="response"><pre>[[rsp.response]]</pre></span></span>
+                            </template>
+                          </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+</div>
+<!-- THIS IS OUR MODAL FOR ADDING A COMMENT -->
+<div class="modal fade" id="addCommentModal" role="dialog" >
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h3>Add / Edit Comment</h3>
+                <button type="button" class="close" data-dismiss="modal">×</button>
+            </div>
+              <div class="modal-body">
+                <textarea rows="5" cols="50" id="addCommentTextArea"></textarea>
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn{{config['outline-buttons']}}success" data-dismiss="modal" id="addCommentSubmit" aria-hidden="true">Submit</button>
+              </div>
+        </div>
+    </div>
+</div>
+<!-- END MODAL FOR ADDING A COMMENT -->
+{% endblock %}
+
+{% block scripts %}
+{% include "comments.js" %}
+{% endblock %}
+
+{% block body_config %}
+
+{% endblock %}

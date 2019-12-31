@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block body %}
+<br>
+<div style="resize: vertical; overflow:auto;" class="card border border-dark shadow bg-card-body" id="task_info">
+    <div class="card-header bg-header border border-dark shadow text-white">
+        <h2><span class="operator">Task {{tid}}</span> [[callback.user]]@[[callback.host]]([[callback.pid]])</h2>
+    </div>
+    <div class="card-body response-background border border-dark shadow" style="word-wrap: break-word">
+        <template v-if="task.comment != ''">
+            <button class="btn btn{{config['outline-buttons']}}danger btn-sm" @click="remove_comment(task.id)" style="margin:0px;padding:0px 4px;line-height:20px"><i class="fas fa-trash-alt"></i></button><span class="operator"> [[task.comment_operator]]</span>'s comment: [[task.comment]]<hr>
+        </template>
+        (<span class="operator">[[task.operator]]</span>'s task: <b>[[task.id]]</b> <button class="btn btn btn-sm" @click="add_comment(task)" style="margin:0px;padding:0px 1px;line-height:18px"><img src="/add_comment.png" width="20px" height="20px" data-toggle="tooltip" title="Add a comment to this task for all operators to see and search by"></button> <label class="switch" style="width:40px; height:20px" data-toggle="tooltip" title="Toggle browser scripts if available and applied for this command's output"><input type="checkbox" :checked="task.use_scripted" v-model="task.use_scripted" @click="update_view()"><span class="script-slider round"></span></label> - [[task.status]] at <span class="timestamp">[[toLocalTime(task.timestamp)]]</span>)&nbsp;<br>
+        [[task.command]]&nbsp;[[task.original_params]]
+        <div v-if="task.params != task.original_params">
+            <button class="accordion" :id="'toggle_task' + task.id" @click="toggle_show_params(task.id)">Show transformed params</button><span class="response" style="display:none">[[task.params]]</span>
+        </div>
+        <template v-if="task.hasOwnProperty('scripted') && task.use_scripted">
+            <span v-html="task.scripted"></span>
+        </template>
+        <template v-else>
+            <br><span v-for="rsp in responses" :key="rsp.id" style="white-space: pre-wrap"><span class="timestamp">([[toLocalTime(rsp.timestamp)]])<br></span><span class="response"><pre>[[rsp.response]]</pre></span></span>
+        </template>
+    </div>
+</div>
+<!-- THIS IS OUR MODAL FOR ADDING A COMMENT -->
+<div class="modal fade" id="addCommentModal" role="dialog" >
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h3>Add / Edit Comment</h3>
+                <button type="button" class="close" data-dismiss="modal">×</button>
+            </div>
+              <div class="modal-body">
+                <textarea rows="5" cols="50" id="addCommentTextArea"></textarea>
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn{{config['outline-buttons']}}success" data-dismiss="modal" id="addCommentSubmit" aria-hidden="true">Submit</button>
+              </div>
+        </div>
+    </div>
+</div>
+<!-- END MODAL FOR ADDING A COMMENT -->
+{% endblock %}
+
+{% block scripts %}
+{% include "share_task.js" %}
+{% endblock %}
+
+{% block body_config %}
+
+{% endblock %}

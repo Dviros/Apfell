@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block body %}
+
+<br>
+<div id="payloadCreation">
+    <div class="card-deck">
+        <div class="card border-0">
+            <div class="card-header bg-header border border-dark shadow text-white">
+                C2 Profile Information
+            </div>
+            <div class="collapse show" id="c2-card-body">
+                <div class="card-body border border-dark shadow bg-card-body">
+                    Select the overall C2 Profile you want to use. If you have saved profile instances, you can use these to auto-populate the fields here.<br>
+                    <select id="c2_profile">
+                        <option value="Select One">Select One...</option>
+                    </select>
+                    <select id="c2_instance" hidden>
+                        <option value="Select One...">Select One...</option>
+                        <option v-for="(value, k, s) in c2_instance_values" :value="k">[[k]]</option>
+                    </select><br>
+                    <div id="c2ParameterFormFields">
+                        <template v-if="c2_profile_parameters.length != 0">
+                            <table class="table table-condensed table-striped table-hover {{config['table-color']}}" id="c2_param_table" style=";word-wrap: break-word;width:100%">
+                                <tr>
+                                    <th><b>Parameter Name</b></th>
+                                    <th><b>Parameter Value</b></th>
+                                </tr>
+                                <tr v-for="(value, index) in c2_profile_parameters" :key="index" style="width:100%">
+                                    <td  style="width:15rem">
+                                       [[value.name]]
+                                    </td>
+                                    <td >
+                                        <textarea oninput="adjust_size(this)" :id="[[value.key]]" :placeholder="[[value.hint]]" v-model="value.hint" cols="40"></textarea>
+                                    </td>
+                                </tr>
+                            </table>
+                        </template>
+                    </div>
+                </div>
+                <div class="card-footer border border-dark shadow">
+                    <button class="btn btn{{config['outline-buttons']}}success" id="move_to_payloads_button" @click="move_to_payloads()">Next</button>
+                </div>
+            </div>
+
+        </div>
+        <div class="card border-0">
+            <div class="card-header bg-header border border-dark shadow text-white">
+                Payload Type Information
+            </div>
+            <div class="collapse" id="payload-card-body">
+                <div class="card-body border shadow border-dark bg-card-body">
+                    Select a payload type that supports the C2 Profile you just selected.<br>
+                    <select id="payload_type">
+
+                    </select><br>
+                    <div id="payloadParameterFormFields">
+                        <template v-if="payload_parameters.length != 0">
+                            <table class="table table-condensed table-striped table-hover {{config['table-color']}}" id="payloadParameterTable">
+                                <tr>
+                                    <th><b>Parameter Name</b></th>
+                                    <th><b>Parameter Value</b></th>
+                                </tr>
+                                <tr hidden id="payloadWrapperRow">
+                                    <td>Select Payload to Wrap: </td>
+                                    <td>
+                                        <select id="wrappedPayload"></select>
+                                    </td>
+
+                                </tr>
+                                <tr v-for="(value, index) in payload_parameters" :key="index">
+                                    <td>
+                                        [[value.name]]
+                                    </td>
+                                    <td>
+                                        <textarea type="text" cols="45" :placeholder="[[value.parameter]]" v-model="value.parameter"></textarea>
+                                    </td>
+                                </tr>
+                            </table>
+                        </template>
+
+                    </div><br>
+                    <input type="text" size="50" placeholder="File Name" id="location"><br>
+                    <input type="text" size="50" placeholder="Default Tag" id="default_tag">
+                </div>
+                <div class="card-footer border shadow border-dark">
+                    <button class="btn btn{{config['outline-buttons']}}warning" id="move_from_payloads_button" @click="move_from_payloads()">Back</button>
+                    <button class="btn btn{{config['outline-buttons']}}success" id="move_to_commands_button" @click="move_to_commands()">Next</button>
+                </div>
+            </div>
+
+        </div>
+        <div class="card border-0">
+            <div class="card-header bg-header border border-dark shadow text-white">
+                Select Commands
+            </div>
+            <div class="collapse" id="commands-card-body">
+                <div class="card-body border shadow border-dark bg-card-body">
+                    Select the command functionality you want inserted into your initial payload. Commands can be loaded in later as well. Minimizing the number of commands in initial payloads can safeguard capabilities from defenders.<br>
+                    <select multiple id="payload_commands" size="30">
+
+                    </select>
+                </div>
+                <div class="card-footer border shadow border-dark">
+                    <button class="btn btn{{config['outline-buttons']}}warning" id="move_from_commands_button" @click="move_from_commands()">Back</button>
+                    <button class="btn btn{{config['outline-buttons']}}success" id="move_to_submit_button" @click="move_to_submit()">Next</button>
+                </div>
+            </div>
+
+        </div>
+        <button class="btn btn{{config['outline-buttons']}}success" hidden id="payloadSubmit" @click="submit_payload()" style="height:4rem">Submit</button>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{% include "payloads_creation.js" %}
+{% endblock %}
+
+{% block body_config %}
+
+{% endblock %}

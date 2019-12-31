@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="btn-group">
+    <button class="btn btn{{config['outline-buttons']}}info btn-sm" onclick="host_window()">Group by Host</button>
+    <button class="btn btn{{config['outline-buttons']}}info btn-sm" onclick="user_window()">Group by User</button>
+</div><br><br>
+
+
+<div id="keylog_div">
+    <div v-for="(group, key, index) in keylogs" style="resize: vertical; overflow:scroll" class="card border border-dark shadow bg-card-body-l1">
+        <div class="card-header bg-header text-white"><h2><span class="operator">[[key.toString()]]</span>'s Keylog Data</h2></div>
+            <!-- CONFIGURE THE DISPLAY FOR IF WE'RE GROUPING BY WINDOW -->
+            <div v-for="(window, key2, index2) in group" v-if="data.sub_grouping == 'window'" class="card border border-dark shadow bg-card-body-l2" style="margin-bottom:20px">
+                <div class="card-header border border-dark bg-header shadow">
+                    <h4>
+                        <span class="operator">[[window[0].user]]</span> in window <font color="green"><b>[[window[0].window]]</b></font>
+                        <span v-if="data.grouping == 'user'"> on <font color="purple"><b>[[window[0].callback.host]]</b></font></span>
+                    </h4>
+                </div>
+                <div class="card-body border border-dark bg-card-body-l2">
+                    <div v-for="log in window">
+                        <span class="timestamp">([[toLocalTime(log.timestamp)]])</span>(<span> Callback [[window[0].callback.id]]-<a :href="'{{http}}://{{links.server_ip}}:{{links.server_port}}/tasks/' + window[0].task" target="_blank"><b>[[window[0].task]]</b></a></span>)
+                        <span class="response">[[log.keystrokes]]</span>
+                    </div>
+                </div>
+
+            </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+{% include "keylogs.js" %}
+{% endblock %}
+
+{% block body_config %}
+
+{% endblock %}
